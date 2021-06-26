@@ -17,8 +17,8 @@ spec:
           image: ${docker_username}/user-service # cat users-depl.yaml | envsubst | k apply -f -
           resources:
             limits:
-              memory: "128Mi"
-              cpu: "500m"
+              memory: "512Mi"
+              cpu: "1"
           ports:
             - containerPort: 3001
 ---
