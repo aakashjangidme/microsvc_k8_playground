@@ -1,5 +1,4 @@
 import axios from "axios";
-import React from "react";
 import { useQuery } from "react-query";
 import "./App.css";
 
@@ -7,8 +6,6 @@ function App() {
   const { isLoading, error, data } = useQuery("fetchHealth", () =>
     axios.get("http://tickets.lol/users")
   );
-
-  console.log(`data : ${data?.data.message}`);
 
   if (isLoading) return <div> Loading... </div>;
 
