@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: users
-          image: ${docker_username}/user-service  cat users-depl.yaml | envsubst | k apply -f -
+          image: ${docker_username}/user-service # cat users-depl.yaml | envsubst | k apply -f -
           resources:
             limits:
               memory: "128Mi"
