@@ -11,7 +11,7 @@ dotenv.config({ path: path.join(__dirname, `../.env.${process.env.NODE_ENV}`) })
 logger.info(`NODE_ENV : ${process.env.NODE_ENV}`);
 
 
-const PORT = Number(process.env.SERVER_PORT) | 3001;
+const PORT = Number(process.env.PORT) | 3001;
 
 const app: Application = express();
 
