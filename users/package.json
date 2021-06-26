@@ -9,8 +9,8 @@
     "tsc": "tsc",
     "build": "npm run clean && npm run lint && npm run tsc",
     "prestart": "npm run build",
-    "dev": "export NODE_ENV=development && nodemon --exec ts-node src/index.ts",
-    "start": "export NODE_ENV=production && node .",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

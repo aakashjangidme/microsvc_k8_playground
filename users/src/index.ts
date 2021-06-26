@@ -8,8 +8,10 @@ import cors from 'cors';
 
 dotenv.config({ path: path.join(__dirname, `../.env.${process.env.NODE_ENV}`) });
 
+logger.info(`NODE_ENV : ${process.env.NODE_ENV}`);
 
-const PORT = Number(process.env.SERVER_PORT);
+
+const PORT = Number(process.env.SERVER_PORT) | 3001;
 
 const app: Application = express();
 
@@ -23,5 +25,4 @@ app.get('/', (_, res) => {
 
 app.listen(PORT, () => {
     logger.info(`Server Up & Running @[OS]  ${os.hostname} `);
-
 })

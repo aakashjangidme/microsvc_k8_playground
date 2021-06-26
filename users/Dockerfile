@@ -1,12 +1,17 @@
 FROM node:14-alpine
 
-WORKDIR /usr/src/app
+ENV NODE_ENV=development
 
-COPY package*.json ./
+WORKDIR /app
+
+COPY package*.json .
 
 RUN npm install
 
 COPY . .
+
+# Caching specific
+# ADD . /app 
 
 EXPOSE 3001 
 
