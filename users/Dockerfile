@@ -4,11 +4,11 @@ ENV NODE_ENV=development
 
 WORKDIR /app
 
-COPY package*.json .
+COPY package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY . ./
 
 # Caching specific
 # ADD . /app 

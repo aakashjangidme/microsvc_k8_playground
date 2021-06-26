@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: client
-          image: ${docker_username}/client-service # cat client-depl.yaml | envsubst | k apply -f -
+          image: aakashjangidme/client-service # cat client-depl.yaml | envsubst | k apply -f -
           resources:
             limits:
               memory: "512Mi"
