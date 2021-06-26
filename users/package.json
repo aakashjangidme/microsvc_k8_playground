@@ -17,6 +17,7 @@
   "author": "Aakash Jangid",
   "license": "ISC",
   "devDependencies": {
+    "@types/cors": "^2.8.10",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.12",
     "@types/node": "^15.12.4",
@@ -28,6 +29,7 @@
     "typescript": "^4.3.4"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "winston": "^3.3.3"
