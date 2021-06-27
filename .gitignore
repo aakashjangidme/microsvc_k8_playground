@@ -2,3 +2,4 @@ skaffold.yaml
 k8s
 k8s/client-depl.yaml
 k8s/users-depl.yaml
+.vscode/
