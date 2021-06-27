@@ -4,7 +4,7 @@ import "./App.css";
 
 function App() {
   const { isLoading, error, data } = useQuery("fetchHealth", () =>
-    axios.get("http://tickets.lol/users")
+    axios.get("http://tickets.lol/api/users/details")
   );
 
   if (isLoading) return <div> Loading... </div>;
