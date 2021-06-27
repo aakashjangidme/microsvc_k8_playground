@@ -1,91 +1,69 @@
-import winston from 'winston';
 import fs from 'fs';
-import path from 'path';
-const logDir = 'logs';
+import winston, { createLogger, format, transports } from 'winston';
 
-//Create the directory if doesn't exits.
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir);
-}
-/*
+import app from '../config/config.extra';
 
-const getLabel = (callingModule: any) => {
-  const parts = callingModule.filename.split('/');
-  return parts[parts.length - 2] + '/' + parts.pop();
-};
+const { environment, logging } = app;
+const { combine, colorize, splat, printf, timestamp } = format;
 
-*/
+const keysToFilter = ['password', 'token'];
 
-const timezoned = () =>
-  new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+const formatter = printf((info: any) => {
+  const { level, message, timestamp: ts, ...restMeta } = info;
 
-let alignColorsAndTime = winston.format.combine(
-  winston.format.errors({ stack: true }),
+  const meta =
+    restMeta && Object.keys(restMeta).length
+      ? JSON.stringify(
+          restMeta,
+          (key: any, value: any) =>
+            keysToFilter.includes(key) ? '******' : value,
+          2
+        )
+      : restMeta instanceof Object
+      ? ''
+      : restMeta;
 
-  winston.format.timestamp({
-    format: timezoned,
-  }),
-  winston.format.colorize({
-    all: true,
-  }),
-  //TODO: Put stack trace in logging
-  winston.format.printf(
-    (info) => `  ${info.level} ${info.timestamp} : ${info.message} ${info.meta}`
-  )
-);
-
-// TODO: Research more on winston logger.
-
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-
-  defaultMeta: { service: 'User service' },
-
-  transports: [
-    //
-    // - Write all logs with level `error` and below to `error.log`
-    // - Write all logs with level `info` and below to `combined.log`
-    //
-    new winston.transports.File({
-      filename: path.join(logDir, 'error.log'),
-      level: 'error',
-    }),
-    new winston.transports.File({
-      filename: path.join(logDir, 'combined.log'),
-    }),
-  ],
+  return `[${level}] - [${ts}] ${message} ${meta}`;
 });
 
-// logger.levels({
-//   debug: 0,
-//   info: 1,
-//   silly: 2,
-//   warn: 3,
-//   error: 4,
-// });
-// logger.addColors({
-//   debug: 'green',
-//   info: 'cyan',
-//   silly: 'magenta',
-//   warn: 'yellow',
-//   error: 'red',
-// });
-
-//
-// If we're not in production then log to the `console` with the format:
-// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
-//
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new winston.transports.Console({
-      level: 'info',
-      format: winston.format.combine(
-        alignColorsAndTime,
-        winston.format.colorize()
-      ),
-    })
-  );
+if (!fs.existsSync(logging.dir)) {
+  fs.mkdirSync(logging.dir);
 }
+
+let trans: any = [];
+
+if (environment === 'development') {
+  trans = [new transports.Console()];
+}
+
+const logger = createLogger({
+  level: logging.level,
+  format: combine(
+    splat(),
+    colorize({ message: true }),
+    timestamp({ format: 'YYYY-MM-DD hh:mm:ss A' }),
+    formatter
+  ),
+
+  transports: [
+    ...trans,
+
+    new transports.File({
+      filename: `${logging.dir}/${
+        logging.level
+      }-${new Date().toDateString()}.log`,
+      maxFiles: 2,
+      maxsize: 5242880, // 5MB
+    }),
+
+    // new DailyRotateFile({
+    //   maxSize: logging.maxSize,
+    //   maxFiles: logging.maxFiles,
+    //   datePattern: logging.datePattern,
+    //   zippedArchive: true,
+    //   filename: `${logging.dir}/${logging.level}-%DATE%.log`
+    // })
+  ],
+});
 
 export default logger;

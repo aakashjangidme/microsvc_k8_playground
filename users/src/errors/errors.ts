@@ -1,5 +1,3 @@
-import { Response } from 'express';
-
 interface IErrorResponse {
   status: number;
   message: string;
