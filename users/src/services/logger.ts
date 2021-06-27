@@ -30,7 +30,7 @@ let alignColorsAndTime = winston.format.combine(
   }),
   //TODO: Put stack trace in logging
   winston.format.printf(
-    (info) => `  ${info.level} ${info.timestamp} : ${info.message} `
+    (info) => `  ${info.level} ${info.timestamp} : ${info.message} ${info.meta}`
   )
 );
 

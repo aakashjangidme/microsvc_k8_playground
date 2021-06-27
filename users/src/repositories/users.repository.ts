@@ -2,102 +2,89 @@ import { User } from '../entity/user.entity';
 import { getManager, getRepository } from 'typeorm';
 import logger from '../services/logger';
 import { UserDetail } from '../entity/user-detail.entity';
+import { RestError } from '../errors/errors';
+import { Errors } from '../errors/errors';
 
 const NAMESPACE = 'USER REPOSITORY';
 
 const saveOrGetUser = async (userFromRequest: any) => {
-  try {
-    const userRepsitory = getRepository(User);
-    let user: User | undefined = await userRepsitory.findOne(
-      userFromRequest.id
-    );
+  const userRepsitory = getRepository(User);
+  let user: User | undefined = await userRepsitory.findOne(userFromRequest.id);
 
-    // This checking condition maybe not required because ORM updates the record if found!
-    if (!user) {
-      await userRepsitory.save(userFromRequest);
+  // This checking condition maybe not required because ORM updates the record if found!
+  if (!user) {
+    await userRepsitory.save(userFromRequest);
 
-      logger.info(NAMESPACE, 'User has been saved.', userFromRequest);
-      return userFromRequest;
-    } else {
-      logger.info(NAMESPACE, 'User Exists', userFromRequest);
-
-      return user;
-    }
-  } catch (error) {
-    logger.error(NAMESPACE, error.message, error);
-    throw error;
+    logger.info(NAMESPACE, 'User has been saved.', userFromRequest);
+    return userFromRequest;
+  } else {
+    logger.info(NAMESPACE, 'User Exists Already.', userFromRequest);
+    return user;
   }
 };
 /** Update User detail */
 
 const updateUser = async (userDetailFromRequest: any) => {
-  try {
-    const userRepsitory = getRepository(User);
+  const userRepsitory = getRepository(User);
 
-    let user: User | undefined = await userRepsitory.findOne(
-      userDetailFromRequest.id
+  let user: User | undefined = await userRepsitory.findOne(
+    userDetailFromRequest.id
+  );
+
+  if (!user) {
+    throw new RestError(Errors.BadRequest, 'User does not exist.');
+  }
+
+  const userDetailRepsitory = getRepository(UserDetail);
+
+  let userDetail: UserDetail | undefined = await userDetailRepsitory.findOne(
+    user.id
+  );
+
+  //TODO: Build a middleware to validate request for particular userDetail (Firebase)
+
+  if (!userDetail) {
+    await userDetailRepsitory.save(userDetailFromRequest);
+    logger.info(
+      NAMESPACE,
+      'User details have been saved',
+      userDetailFromRequest
     );
-
-    if (!user) {
-      throw Error('User does not exist');
-    }
-
-    const userDetailRepsitory = getRepository(UserDetail);
-
-    let userDetail: UserDetail | undefined = await userDetailRepsitory.findOne(
-      user.id
+    return userDetailFromRequest;
+  } else {
+    await userDetailRepsitory.update(
+      userDetailFromRequest.id,
+      userDetailFromRequest
     );
-
-    //TODO: Build a middleware to validate request for particular userDetail (Firebase)
-
-    if (!userDetail) {
-      await userDetailRepsitory.save(userDetailFromRequest);
-      logger.info(
-        NAMESPACE,
-        'User details have been saved',
-        userDetailFromRequest
-      );
-      return userDetailFromRequest;
-    } else {
-      await userDetailRepsitory.update(
-        userDetailFromRequest.id,
-        userDetailFromRequest
-      );
-      logger.info(
-        NAMESPACE,
-        'User details have been updated',
-        userDetailFromRequest
-      );
-      return userDetail;
-    }
-  } catch (error) {
-    logger.error(NAMESPACE, error.message, error);
-    throw error;
+    logger.info(
+      NAMESPACE,
+      'User details have been updated',
+      userDetailFromRequest
+    );
+    return userDetail;
   }
 };
 
 const getAllDetails = async (fromRequest: any) => {
-  try {
-    // const userRepsitory = getRepository(UserDetail);
+  // const userRepsitory = getRepository(UserDetail);
 
-    let user: any = await getManager()
-      .createQueryBuilder()
+  let user: any = await getManager()
+    .createQueryBuilder()
 
-      .from(User, 'usr')
-      .innerJoin(UserDetail, 'usrd', 'usr.id = usrd.id')
+    .from(User, 'usr')
+    .innerJoin(UserDetail, 'usrd', 'usr.id = usrd.id')
 
-      .where('usr.id = :id', { id: fromRequest.id })
-      .getRawOne();
+    .where('usr.id = :id', { id: fromRequest.id })
+    .getRawOne();
 
-    if (!user) {
-      throw Error('User Not Found');
-    } else {
-      logger.info(NAMESPACE, 'User Exists', user);
-      return user;
-    }
-  } catch (error) {
-    logger.error(NAMESPACE, error.message, error);
-    throw error;
+  if (!user) {
+    throw new RestError(
+      Errors.BadRequest,
+      'Details for this user or this user does not exist.'
+    );
+  } else {
+    logger.info(NAMESPACE, 'User Exists', user);
+    return user;
   }
 };
 export { saveOrGetUser, updateUser, getAllDetails };

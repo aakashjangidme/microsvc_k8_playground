@@ -8,17 +8,18 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ) => {
-  logger.info(req.headers);
-
+  // logger.info(req.headers);
+  const auth = req.headers['x-forwarded-for'] !== null;
   logger.error(
-    `${err.response?.status || 500} - ${err.response?.message} - ${
-      req.originalUrl
-    } - ${req.method} - ${req.ip}  ${err.message}`
+    `[${req.method}] - [STATUS] ${err.response?.status} - [IP] ${req.headers['x-forwarded-for']} - [AUTH] ${auth} - [URL] ${req.originalUrl} - [RestError] ${err.response?.message} [ERROR] - ${err.message}`,
+    err.stack
   );
 
   if (err == null || err.response == null) {
     //error is not a custom error
+    const temp: string = err.message;
     err = new RestError(Errors.InternalServerError);
+    err.response.detail = temp;
   }
 
   return res.status(err.response?.status).send(err.response);
