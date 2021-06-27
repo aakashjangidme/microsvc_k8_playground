@@ -2,3 +2,5 @@ node_modules
 dist
 logs
 npm-debug.log
+coverage/
+*.sqlite

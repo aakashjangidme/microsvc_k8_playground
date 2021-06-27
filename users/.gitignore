@@ -30,3 +30,7 @@ logs/
 dist/
 package-lock.json
 Makefile
+serviceAccountKey.json
+coverage/
+*.sqlite
+ormconfig.json

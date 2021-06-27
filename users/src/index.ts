@@ -6,7 +6,10 @@ import cors from 'cors';
 import { userRouter } from './routes/user-router';
 import config from './config/config';
 import { errorHandler } from './middlewares/error-handler';
-import { nextTick } from 'process';
+import { createConnection } from 'typeorm';
+import { healthCheckRouter } from './routes/health-check';
+import { Errors, RestError } from './errors/errors';
+import { randomUUID } from 'crypto';
 
 dotenv.config({
   path: path.join(__dirname, `../.env.${process.env.NODE_ENV}`),
@@ -21,26 +24,36 @@ app.use(express.json());
 app.use(cors());
 
 app.use((req, _, next) => {
-  const time = new Date().toLocaleString([], { timeZone: 'Asia/Kolkata' });
+  // const time = new Date().toLocaleString([], { timeZone: 'Asia/Kolkata' });
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   logger.info(
-    `[TIME]-${time} [IP]-${ip} [URL]-${req.originalUrl} [PATH]-${req.path} `
+    `[METHOD] - ${req.method}  [URL]-${req.originalUrl}  [IP]-${ip} `
   );
   next();
 });
 
 /** Routes */
-app.use(userRouter);
+app.use('/api/users/', userRouter);
+app.use('/api/users/', healthCheckRouter);
 
 app.all('*', () => {
-  throw new Error('Not Found');
+  throw new RestError(Errors.NotFound);
 });
 
 /** Error Handling */
 app.use(errorHandler);
 
-app.listen(config.server.port, () => {
-  logger.info(
-    `Server Up & Running On ${config.server.hostname}:${config.server.port}`
-  );
-});
+createConnection()
+  .then(async () => {
+    logger.info('Connecting to database...');
+    /** Server Connection */
+    app.listen(config.server.port, () => {
+      logger.info(
+        `Server Up & Running On ${config.server.hostname}:${config.server.port}`
+      );
+    });
+  })
+  .catch((err) => {
+    logger.error(`${err.message}`, err);
+    logger.info(`${err.message}`, err);
+  });

@@ -1,15 +1,12 @@
 import express from 'express';
-import logger from '../services/logger';
+import { onboardController } from '../controllers/user-controllers/onboard-controller';
+import { getDetailController } from '../controllers/user-controllers/get-detail-controller';
+import { updateDetailController } from '../controllers/user-controllers/update-detail-controller';
 
 const router = express.Router();
 
-router.get('/api/users/onboard', (_req, res) => {
-  res.status(200).json({ message: 'working' });
-});
-
-router.get('/api/users/details', (_req, res) => {
-  logger.info(`/details Accessed`);
-  res.status(200).json({ message: 'woreking' });
-});
+router.post('/onboard', onboardController);
+router.post('/details', getDetailController);
+router.post('/update', updateDetailController);
 
 export { router as userRouter };
