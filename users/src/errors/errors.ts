@@ -49,24 +49,3 @@ export class RestError extends Error implements IRestError {
     this.name = 'RestError';
   }
 }
-
-// export class RESTError extends Error {
-//   public response: IErrorResponse;
-//   constructor(
-//     error: { status: number; message: string },
-//     detail?: string,
-//     ...rest: any[]
-//   ) {
-//     super(...rest);
-
-//     //
-//     this.response = {
-//       status: error.status,
-//       message: error.message,
-//       detail: detail,
-//     };
-
-//     // Object.setPrototypeOf(this, RestError.prototype);
-//     Object.setPrototypeOf(this, new.target.prototype);
-//   }
-// }

@@ -1,5 +1,5 @@
-import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
-import { Errors, IRestError, RestError } from '../errors/errors';
+import { NextFunction, Request, Response } from 'express';
+import { Errors, RestError } from '../errors/errors';
 import logger from '../services/logger';
 
 export const errorHandler = (
@@ -11,8 +11,8 @@ export const errorHandler = (
   // logger.info(req.headers);
   const auth = req.headers['x-forwarded-for'] !== null;
   logger.error(
-    `[${req.method}] - [STATUS] ${err.response?.status} - [IP] ${req.headers['x-forwarded-for']} - [AUTH] ${auth} - [URL] ${req.originalUrl} - [RestError] ${err.response?.message} [ERROR] - ${err.message}`,
-    err
+    `[${req.reqId}] [${req.method}] - [STATUS] : ${err.response?.status} - [IP] : ${req.headers['x-forwarded-for']} - [AUTH] : ${auth} - [URL : ${req.originalUrl} - [RestError] : ${err.response?.message} [ERROR] : ${err.message}`,
+    err.name !== 'RestError' ? { err: err.stack } : {}
   );
 
   if (err == null || err.response == null) {

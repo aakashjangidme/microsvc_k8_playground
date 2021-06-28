@@ -1,7 +1,9 @@
 import fs from 'fs';
-import winston, { createLogger, format, transports } from 'winston';
+import path from 'path';
+import { createLogger, format, transports } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
-import app from '../config/config.extra';
+import app from '../config/config';
 
 const { environment, logging } = app;
 const { combine, colorize, splat, printf, timestamp } = format;
@@ -9,11 +11,12 @@ const { combine, colorize, splat, printf, timestamp } = format;
 const keysToFilter = ['password', 'token'];
 
 const formatter = printf((info: any) => {
-  const { level, message, timestamp: ts, ...restMeta } = info;
+  const { level, message, label, timestamp: ts, ...restMeta } = info;
 
   const meta =
     restMeta && Object.keys(restMeta).length
-      ? JSON.stringify(
+      ? '-- ' +
+        JSON.stringify(
           restMeta,
           (key: any, value: any) =>
             keysToFilter.includes(key) ? '******' : value,
@@ -23,7 +26,7 @@ const formatter = printf((info: any) => {
       ? ''
       : restMeta;
 
-  return `[${level}] - [${ts}] ${message} ${meta}`;
+  return `[${level}] - [${ts}] - [${label}] : ${message} ` + meta;
 });
 
 if (!fs.existsSync(logging.dir)) {
@@ -39,6 +42,7 @@ if (environment === 'development') {
 const logger = createLogger({
   level: logging.level,
   format: combine(
+    format.label({ label: path.basename(require.main.filename) }),
     splat(),
     colorize({ message: true }),
     timestamp({ format: 'YYYY-MM-DD hh:mm:ss A' }),
@@ -48,21 +52,14 @@ const logger = createLogger({
   transports: [
     ...trans,
 
-    new transports.File({
-      filename: `${logging.dir}/${
-        logging.level
-      }-${new Date().toDateString()}.log`,
-      maxFiles: 2,
-      maxsize: 5242880, // 5MB
+    new DailyRotateFile({
+      maxSize: logging.maxSize,
+      maxFiles: logging.maxFiles,
+      datePattern: logging.datePattern,
+      zippedArchive: true,
+      filename: `${logging.dir}/${logging.level}-%DATE%.log`,
+      // format: format.json(),
     }),
-
-    // new DailyRotateFile({
-    //   maxSize: logging.maxSize,
-    //   maxFiles: logging.maxFiles,
-    //   datePattern: logging.datePattern,
-    //   zippedArchive: true,
-    //   filename: `${logging.dir}/${logging.level}-%DATE%.log`
-    // })
   ],
 });
 
